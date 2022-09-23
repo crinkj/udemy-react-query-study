@@ -1,4 +1,4 @@
-import { useQuery } from "react-query";
+import {useMutation,useQuery } from "react-query";
 
 async function fetchComments(postId) {
   const response = await fetch(
@@ -15,6 +15,7 @@ async function deletePost(postId) {
   return response.json();
 }
 
+const deleteMutation = useMutation((postId) => deletePost(postId))
 async function updatePost(postId) {
   const response = await fetch(
     `https://jsonplaceholder.typicode.com/postId/${postId}`,
@@ -22,13 +23,16 @@ async function updatePost(postId) {
   );
   return response.json();
 }
-
+  
 export function PostDetail({ post }) {
   // replace with useQuery
   const {data, isError, error, isLoading} = useQuery(
       ["comments",post.id], 
       () => fetchComments(post.id)
     );
+
+    const deleteMutation = useMutation((postId) => deletePost(postId))
+
   if(isError)
   return (
     <>
@@ -43,10 +47,14 @@ export function PostDetail({ post }) {
     </>
   )
 
-  return (
+  return ( 
     <>
       <h3 style={{ color: "blue" }}>{post.title}</h3>
-      <button>Delete</button> <button>Update title</button>
+      <button onClick={() => deleteMutation.mutate(post.id)}>Delete</button> 
+      {deleteMutation.isError &&(
+        <p style={{ color: "red" }}>Error deleting the post </p>
+      )}
+      <button>Update title</button>
       <p>{post.body}</p>
       <h4>Comments</h4>
       {data.map((comment) => (
